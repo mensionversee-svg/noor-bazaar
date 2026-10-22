@@ -1,0 +1,12 @@
+# Roadmap
+- [x] Import noobazaar store from GitHub + database
+- [x] Turn on login (email + Google)
+- [x] Import products from products.csv (with descriptions)
+- [x] Complete checkout flow
+- [x] Ask for WhatsApp number at checkout
+- [x] Full admin panel (admins: mujahidaliraza7@gmail.com, heartlessgirl557@gmail.com)
+- [x] Import markaz.app Fitness, Home Linen, Perfumes, Home Essentials, Kitchenware products
+- [x] AI photos for the 8 featured products (product pages + checkout)
+- [x] Raise prices of markaz-scraped products by 15%
+- [x] Admin AI tool: pick order + customer concern -> draft WhatsApp reply
+- [x] Admin CSV download with all product details and image links (2,816-row download verified; signed-in admin view requires user sign-in)
