@@ -1,12 +1,10 @@
 # Roadmap
-- [x] Import noobazaar store from GitHub + database
-- [x] Turn on login (email + Google)
-- [x] Import products from products.csv (with descriptions)
-- [x] Complete checkout flow
-- [x] Ask for WhatsApp number at checkout
-- [x] Full admin panel (admins: mujahidaliraza7@gmail.com, heartlessgirl557@gmail.com)
-- [x] Import markaz.app Fitness, Home Linen, Perfumes, Home Essentials, Kitchenware products
-- [x] AI photos for the 8 featured products (product pages + checkout)
-- [x] Raise prices of markaz-scraped products by 15%
-- [x] Admin AI tool: pick order + customer concern -> draft WhatsApp reply
-- [x] Admin CSV download with all product details and image links (2,816-row download verified; signed-in admin view requires user sign-in)
+
+- [x] Download noorbazaar repo from GitHub and copy source into project
+- [x] Enable Lovable Cloud (new backend) and install dependencies
+- [x] Apply database schema (store: profiles, user_roles, products, reviews, orders, site_settings)
+- [ ] Create product-images storage bucket
+- [ ] Turn on login (email/password) and verify sign-in flow
+- [ ] Build public API endpoint (/api/public) that serves admin panel data (orders + details) for the user's separate multi-admin dashboard, secured with an API key secret
+- [ ] Verify end-to-end: home page loads, login works, admin data API returns orders
+- [ ] Ask user for data exports (products/orders) from old backend to import
