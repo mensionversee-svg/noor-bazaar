@@ -43,6 +43,13 @@
       "when": 1792003439753,
       "tag": "0005_orders_whatsapp",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1792704548672,
+      "tag": "0006_noorbazaar_store_core",
+      "breakpoints": true
     }
   ]
 }
