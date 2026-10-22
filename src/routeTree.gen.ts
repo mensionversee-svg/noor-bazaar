@@ -20,6 +20,7 @@ import { Route as AuthenticatedAccountRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedAdminRouteImport } from './routes/_authenticated/admin'
 import { Route as HelpSlugRouteImport } from './routes/help/$slug'
 import { Route as ProductsSlugRouteImport } from './routes/products/$slug'
+import { Route as ApiPublicAdminDashboardRouteImport } from './routes/api/public/admin-dashboard'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
@@ -75,6 +76,11 @@ const ProductsSlugRoute = ProductsSlugRouteImport.update({
   path: '/products/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicAdminDashboardRoute = ApiPublicAdminDashboardRouteImport.update({
+  id: '/api/public/admin-dashboard',
+  path: '/api/public/admin-dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/admin': typeof AuthenticatedAdminRoute
   '/help/$slug': typeof HelpSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
+  '/api/public/admin-dashboard': typeof ApiPublicAdminDashboardRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -99,6 +106,7 @@ export interface FileRoutesByTo {
   '/admin': typeof AuthenticatedAdminRoute
   '/help/$slug': typeof HelpSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
+  '/api/public/admin-dashboard': typeof ApiPublicAdminDashboardRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -113,6 +121,7 @@ export interface FileRoutesById {
   '/_authenticated/admin': typeof AuthenticatedAdminRoute
   '/help/$slug': typeof HelpSlugRoute
   '/products/$slug': typeof ProductsSlugRoute
+  '/api/public/admin-dashboard': typeof ApiPublicAdminDashboardRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/help/$slug'
     | '/products/$slug'
+    | '/api/public/admin-dashboard'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -139,6 +149,7 @@ export interface FileRouteTypes {
     | '/admin'
     | '/help/$slug'
     | '/products/$slug'
+    | '/api/public/admin-dashboard'
   id:
     | '__root__'
     | '/'
@@ -152,6 +163,7 @@ export interface FileRouteTypes {
     | '/_authenticated/admin'
     | '/help/$slug'
     | '/products/$slug'
+    | '/api/public/admin-dashboard'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -164,6 +176,7 @@ export interface RootRouteChildren {
   WishlistRoute: typeof WishlistRoute
   HelpSlugRoute: typeof HelpSlugRoute
   ProductsSlugRoute: typeof ProductsSlugRoute
+  ApiPublicAdminDashboardRoute: typeof ApiPublicAdminDashboardRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -245,6 +258,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProductsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/admin-dashboard': {
+      id: '/api/public/admin-dashboard'
+      path: '/api/public/admin-dashboard'
+      fullPath: '/api/public/admin-dashboard'
+      preLoaderRoute: typeof ApiPublicAdminDashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -271,6 +291,7 @@ const rootRouteChildren: RootRouteChildren = {
   WishlistRoute: WishlistRoute,
   HelpSlugRoute: HelpSlugRoute,
   ProductsSlugRoute: ProductsSlugRoute,
+  ApiPublicAdminDashboardRoute: ApiPublicAdminDashboardRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
