@@ -8,6 +8,8 @@ import { orderRef, orderStatuses, statusColor, statusLabel } from '@/lib/orders'
 import type { OrderItem } from '@/lib/orders'
 import { store } from '@/config/store'
 import { categories } from '@/data/catalog'
+import { importProductsToSupabase, parseProductCsv } from '@/lib/product-import'
+
 import { useServerFn } from '@tanstack/react-start'
 import { draftWhatsAppReply } from '@/lib/ai-reply.functions'
 import { ProductExport } from '@/components/admin/ProductExport'
@@ -227,6 +229,42 @@ function Products() {
   const [catF, setCatF] = useState('all')
   const [page, setPage] = useState(0)
   const [editing, setEditing] = useState<any | 'new' | null>(null)
+  const [csvBusy, setCsvBusy] = useState(false)
+  const csvInputRef = useRef<HTMLInputElement>(null)
+
+  const runCsvImport = async (file: File) => {
+    setCsvBusy(true)
+    try {
+      const text = await file.text()
+      const parsed = parseProductCsv(text)
+      if (parsed.errors.length >= parsed.payloads.length && parsed.payloads.length === 0) {
+        toast.error(parsed.errors[0]?.message ?? 'CSV mein products nahi mile')
+        return
+      }
+      const ok = confirm(
+        `${parsed.payloads.length} products mile. Import karein?\n` +
+        (parsed.errors.length ? `${parsed.errors.length} rows skip hongi (ghalat name/price).\n` : '') +
+        'Same id ya slug wale products update ho jayenge.',
+      )
+      if (!ok) return
+      const result = await importProductsToSupabase(parsed, async (chunk, key) => {
+        const { error } = await supabase.from('products').upsert(chunk, { onConflict: key })
+        if (!error) return null
+        if (chunk.length > 1) return error.message
+        return `${chunk[0].name ?? 'Row'}: ${error.message}`
+      })
+      if (result.saved) toast.success(`${result.saved} products import ho gaye`)
+      if (result.failed) toast.error(`${result.failed} rows fail: ${result.errors.slice(0, 3).join(' | ')}${result.errors.length > 3 ? '…' : ''}`)
+      load()
+    } catch (e: any) {
+      toast.error(`CSV padhne mein masla: ${e?.message ?? e}`)
+    } finally {
+      setCsvBusy(false)
+      if (csvInputRef.current) csvInputRef.current.value = ''
+    }
+  }
+
+
   const load = useCallback(() => {
     ;(async () => {
       const all: Array<any> = []
