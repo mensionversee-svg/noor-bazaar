@@ -164,30 +164,32 @@ export async function importProductsToSupabase(
   parsed: ParsedImport,
   upsert: (chunk: ProductPayload[], conflictKey: 'id' | 'slug') => Promise<string | null>,
   onProgress?: (done: number, total: number) => void,
-): Promise<{ saved: number; errors: string[] }> {
+): Promise<{ saved: number; failed: number; errors: string[] }> {
   const withId = parsed.payloads.filter((p) => p._hasId)
   const withoutId = parsed.payloads.filter((p) => !p._hasId)
   const clean = (p: ProductPayload) => { const { _hasId, ...rest } = p; return rest }
-  const savedRows: string[] = []
+  const errors: string[] = []
   const CHUNK = 50
+  let saved = 0
   let done = 0
+
+  const importChunk = async (chunk: ProductPayload[], key: 'id' | 'slug') => {
+    const error = await upsert(chunk, key)
+    if (!error) { saved += chunk.length; return }
+    for (const payload of chunk) {
+      const single = await upsert([payload], key)
+      if (single) errors.push(single)
+      else saved += 1
+    }
+  }
 
   for (const [group, key] of [[withId, 'id'], [withoutId, 'slug']] as const) {
     for (let i = 0; i < group.length; i += CHUNK) {
-      const chunk = group.slice(i, i + CHUNK).map(clean)
-      const error = await upsert(chunk, key)
-      if (error) {
-        // Chunk failed — retry one-by-one so one bad row doesn't sink the batch.
-        for (const payload of chunk) {
-          const single = await upsert([payload], key)
-          savedRows.push(single ?? '')
-        }
-      } else {
-        savedRows.push('', ...Array<string>(chunk.length - 1).fill(''))
-      }
-      done += chunk.length
+      await importChunk(group.slice(i, i + CHUNK).map(clean), key)
+      done += Math.min(CHUNK, group.length - i)
       onProgress?.(done, parsed.payloads.length)
     }
   }
-  return { saved: savedRows.filter((e) => e === '').length, errors: savedRows.filter((e) => e !== '') }
+  return { saved, failed: errors.length, errors }
 }
+
