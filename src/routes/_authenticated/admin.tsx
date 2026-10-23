@@ -8,6 +8,8 @@ import { orderRef, orderStatuses, statusColor, statusLabel } from '@/lib/orders'
 import type { OrderItem } from '@/lib/orders'
 import { store } from '@/config/store'
 import { categories } from '@/data/catalog'
+import { importProductsToSupabase, parseProductCsv } from '@/lib/product-import'
+
 import { useServerFn } from '@tanstack/react-start'
 import { draftWhatsAppReply } from '@/lib/ai-reply.functions'
 import { ProductExport } from '@/components/admin/ProductExport'
