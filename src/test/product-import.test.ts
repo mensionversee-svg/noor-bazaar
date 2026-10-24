@@ -19,7 +19,7 @@ describe('parseProductCsv', () => {
   it('parses an exported row into an id-upsert payload with gallery images', () => {
     const { payloads, errors } = parseProductCsv(EXPORT_CSV)
     expect(errors).toHaveLength(1)
-    expect(errors[0].line).toBe(4)
+    expect(errors[0]?.line).toBe(4)
     expect(payloads).toHaveLength(2)
     const first = payloads[0]!
     expect(first.id).toBe(7)
@@ -41,7 +41,7 @@ describe('parseProductCsv', () => {
     expect(second.slug.startsWith('lawn-suit-3pc')).toBe(true)
     expect(second.featured).toBe(false)
     expect(errors).toHaveLength(1)
-    expect(errors[0].message).toContain('Price')
+    expect(errors[0]?.message).toContain('Price')
   })
 })
 
