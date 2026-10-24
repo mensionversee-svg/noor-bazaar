@@ -21,7 +21,7 @@ describe('parseProductCsv', () => {
     expect(errors).toHaveLength(1)
     expect(errors[0].line).toBe(4)
     expect(payloads).toHaveLength(2)
-    const first = payloads[0]
+    const first = payloads[0]!
     expect(first.id).toBe(7)
     expect(first._hasId).toBe(true)
     expect(first.name).toBe('Stainless "Steel" Electric Kettle')
@@ -36,7 +36,7 @@ describe('parseProductCsv', () => {
 
   it('builds a slug-upsert payload when id is missing and reports bad price rows', () => {
     const { payloads, errors } = parseProductCsv(EXPORT_CSV)
-    const second = payloads[1]
+    const second = payloads[1]!
     expect(second._hasId).toBe(false)
     expect(second.slug.startsWith('lawn-suit-3pc')).toBe(true)
     expect(second.featured).toBe(false)
