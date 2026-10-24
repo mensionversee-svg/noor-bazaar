@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { importProductsToSupabase, parseCsv, parseProductCsv } from '@/lib/product-import'
+import { importProductsToSupabase, parseCsv, parseProductCsv, type ProductPayload } from '@/lib/product-import'
 
 const EXPORT_CSV = [
   'id,slug,name,brand,category,subcategory,price,compare_at,stock,featured,image,image_count,image_1,image_2',
@@ -7,6 +7,8 @@ const EXPORT_CSV = [
   ',,"Lawn Suit 3pc",,women,summer,4999,,,false,https://img.test/lawn.jpg,1,https://img.test/lawn.jpg,',
   ',,"Bad Row",,women,,not-a-number,,,false,,,',
 ].join('\n')
+
+type ImportPayload = ProductPayload & { _hasId: boolean }
 
 describe('parseCsv', () => {
   it('handles BOM, CRLF, quoted cells and escaped quotes', () => {
@@ -21,7 +23,10 @@ describe('parseProductCsv', () => {
     expect(errors).toHaveLength(1)
     expect(errors[0]?.line).toBe(4)
     expect(payloads).toHaveLength(2)
-    const first = payloads[0]!
+    const first = payloads[0]! as {
+      id: number; _hasId: boolean; name: string; price: number; compare_at: number; stock: number
+      featured: boolean; category: string; images: string[]; image: string
+    }
     expect(first.id).toBe(7)
     expect(first._hasId).toBe(true)
     expect(first.name).toBe('Stainless "Steel" Electric Kettle')
@@ -36,7 +41,7 @@ describe('parseProductCsv', () => {
 
   it('builds a slug-upsert payload when id is missing and reports bad price rows', () => {
     const { payloads, errors } = parseProductCsv(EXPORT_CSV)
-    const second = payloads[1]!
+    const second = payloads[1]! as { _hasId: boolean; slug: string; featured: boolean }
     expect(second._hasId).toBe(false)
     expect(second.slug.startsWith('lawn-suit-3pc')).toBe(true)
     expect(second.featured).toBe(false)
@@ -48,19 +53,19 @@ describe('parseProductCsv', () => {
 describe('importProductsToSupabase', () => {
   it('saves chunked rows and counts per-row failures', async () => {
     const { payloads } = parseProductCsv(EXPORT_CSV)
-    const upserted: Array<{ rows: unknown[]; key: string }> = []
+    const upserted: Array<{ rows: Array<Record<string, unknown>>; key: string }> = []
     let failOnce = true
     const result = await importProductsToSupabase(
       { payloads, errors: [], columns: [] },
       async (rows, key) => {
-        upserted.push({ rows, key })
+        upserted.push({ rows: rows as Array<Record<string, unknown>>, key })
         if (failOnce && key === 'id') { failOnce = false; return 'duplicate key' }
         return null
       },
     )
     expect(result.saved).toBe(payloads.length)
     expect(result.failed).toBe(0)
-    expect(upserted.some((u) => u.key === 'id' && (u.rows[0] as { id?: number }).id === 7)).toBe(true)
+    expect(upserted.some((u) => u.key === 'id' && u.rows[0]?.['id'] === 7)).toBe(true)
     expect(upserted.some((u) => u.key === 'slug')).toBe(true)
   })
 })
