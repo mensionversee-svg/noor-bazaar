@@ -1,5 +1,5 @@
 import { Link, createFileRoute } from '@tanstack/react-router'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { supabase } from '@/integrations/supabase/client'
 import { useAuth } from '@/lib/auth'
@@ -248,10 +248,10 @@ function Products() {
       )
       if (!ok) return
       const result = await importProductsToSupabase(parsed, async (chunk, key) => {
-        const { error } = await supabase.from('products').upsert(chunk, { onConflict: key })
+        const { error } = await supabase.from('products').upsert(chunk as any, { onConflict: key })
         if (!error) return null
         if (chunk.length > 1) return error.message
-        return `${chunk[0].name ?? 'Row'}: ${error.message}`
+        return `${chunk[0]?.['name'] ?? 'Row'}: ${error.message}`
       })
       if (result.saved) toast.success(`${result.saved} products import ho gaye`)
       if (result.failed) toast.error(`${result.failed} rows fail: ${result.errors.slice(0, 3).join(' | ')}${result.errors.length > 3 ? '…' : ''}`)
@@ -296,6 +296,16 @@ function Products() {
     <div className="space-y-3">
       <div className="flex flex-wrap gap-2">
         <button type="button" onClick={() => setEditing('new')} className={btn}>+ Add product</button>
+        <button type="button" disabled={csvBusy} onClick={() => csvInputRef.current?.click()} className={btnOutline}>{csvBusy ? 'Import ho raha hai…' : '⬆ Upload CSV'}</button>
+        <input
+          ref={csvInputRef}
+          type="file"
+          accept=".csv,text/csv"
+          className="hidden"
+          aria-label="Upload products CSV"
+          onChange={(e) => { const f = e.target.files?.[0]; if (f) runCsvImport(f) }}
+        />
+
         <input className={`${cell} max-w-xs`} placeholder="Search products…" value={q} onChange={(e) => { setQ(e.target.value); setPage(0) }} />
         <select className={`${cell} w-auto`} value={catF} onChange={(e) => { setCatF(e.target.value); setPage(0) }} aria-label="Filter category">
           <option value="all">All categories</option>

@@ -6,7 +6,29 @@
  */
 
 export type ImportRow = Record<string, string>
-export type ProductPayload = Record<string, any>
+
+export type ProductPayload = Partial<{
+  id: number
+  slug: string
+  name: string
+  brand: string
+  category: string
+  subcategory: string
+  price: number
+  compare_at: number
+  rating: number
+  review_count: number
+  stock: number
+  sold: number
+  image: string
+  images: string[]
+  featured: boolean
+  short_description: string
+  description: string
+  highlights: unknown
+  specs: unknown
+  variants: unknown
+}>
 
 export type ParsedImport = {
   payloads: Array<ProductPayload & { _hasId: boolean }>
@@ -75,7 +97,7 @@ function slugify(name: string): string {
 export function parseProductCsv(text: string): ParsedImport {
   const table = parseCsv(text)
   if (!table.length) return { payloads: [], errors: [{ line: 1, message: 'File khali hai (empty file)' }], columns: [] }
-  const headers = table[0].map((h) => unquoteCell(h).toLowerCase())
+  const headers = table[0]!.map((h) => unquoteCell(h).toLowerCase())
   const idx = (key: string) => headers.indexOf(key)
   const has = (key: string) => idx(key) >= 0
 
@@ -83,7 +105,7 @@ export function parseProductCsv(text: string): ParsedImport {
   const errors: Array<{ line: number; message: string }> = []
 
   for (let r = 1; r < table.length; r++) {
-    const cells = table[r]
+    const cells = table[r]!
     const get = (key: string) => has(key) ? unquoteCell(cells[idx(key)] ?? '') : ''
     const line = r + 1
     const name = get('name')
@@ -150,7 +172,7 @@ export function parseProductCsv(text: string): ParsedImport {
     }
     const unique = [...new Set(gallery.filter((u) => /^(https?:\/\/|\/)/.test(u)))]
     if (unique.length) {
-      payload.image = unique[0]
+      payload.image = unique[0]!
       payload.images = unique
     }
 
@@ -167,7 +189,7 @@ export async function importProductsToSupabase(
 ): Promise<{ saved: number; failed: number; errors: string[] }> {
   const withId = parsed.payloads.filter((p) => p._hasId)
   const withoutId = parsed.payloads.filter((p) => !p._hasId)
-  const clean = (p: ProductPayload) => { const { _hasId, ...rest } = p; return rest }
+  const clean = (p: ProductPayload & { _hasId: boolean }): ProductPayload => { const { _hasId, ...rest } = p; return rest }
   const errors: string[] = []
   const CHUNK = 50
   let saved = 0
@@ -192,4 +214,3 @@ export async function importProductsToSupabase(
   }
   return { saved, failed: errors.length, errors }
 }
-
