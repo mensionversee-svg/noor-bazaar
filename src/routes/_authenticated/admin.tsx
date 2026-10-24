@@ -248,10 +248,10 @@ function Products() {
       )
       if (!ok) return
       const result = await importProductsToSupabase(parsed, async (chunk, key) => {
-        const { error } = await supabase.from('products').upsert(chunk, { onConflict: key })
+        const { error } = await supabase.from('products').upsert(chunk as any, { onConflict: key })
         if (!error) return null
         if (chunk.length > 1) return error.message
-        return `${chunk[0].name ?? 'Row'}: ${error.message}`
+        return `${chunk[0]?.['name'] ?? 'Row'}: ${error.message}`
       })
       if (result.saved) toast.success(`${result.saved} products import ho gaye`)
       if (result.failed) toast.error(`${result.failed} rows fail: ${result.errors.slice(0, 3).join(' | ')}${result.errors.length > 3 ? '…' : ''}`)
